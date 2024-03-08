@@ -1,5 +1,6 @@
 package fernando.hernandez.todolist
 
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.AbsListView
@@ -59,7 +60,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        listView_task.onItemClickListener = AdapterView.OnItemClickListener{parent, view, position, id ->
+        /**listView_task.onItemClickListener = AdapterView.OnItemClickListener{parent, view, position, id ->
             var task_desc = tasks_list[position]
 
             var task = db.taskDao().getTask(task_desc)
@@ -69,6 +70,34 @@ class MainActivity : AppCompatActivity() {
             tasks_list.removeAt(position)
             adaptor.notifyDataSetChanged()
         }
+        */
+
+        listView_task.onItemClickListener = AdapterView.OnItemClickListener { parent, view, position, id ->
+            val taskDesc = tasks_list[position]
+            val task = db.taskDao().getTask(taskDesc)
+
+            val intent = Intent(this, EditTask::class.java)
+            intent.putExtra("task", task)
+            startActivity(intent)
+        }
+
+        //listView_task.onItemClickListener = AdapterView.OnItemClickListener { parent, view, position, id ->
+          //  var task_desc = tasks_list[position]
+
+            //var task = db.taskDao().getTask(task_desc)
+
+            //et_task.setText(task_desc)
+
+            //btn_add.text = "UPDATE"
+
+            /**val selectedTaskDesc = tasks_list[position]
+            val selectedTask = db.taskDao().getTask(selectedTaskDesc)
+
+            val intent = Intent(this, EditTask::class.java)
+            intent.putExtra("task", selectedTask)
+            startActivity(intent) */
+        //}
+
     }
 
     private fun cargar_tareas() {
