@@ -9,6 +9,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.ListView
 import android.widget.Toast
+import androidx.room.Room
 import java.lang.reflect.Array
 
 class MainActivity : AppCompatActivity() {
@@ -18,6 +19,7 @@ class MainActivity : AppCompatActivity() {
     lateinit var listView_task: ListView
     lateinit var tasks_list: ArrayList<String>
     lateinit var adaptor: ArrayAdapter<String>
+    lateinit var db: AppDatabase
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,9 +31,13 @@ class MainActivity : AppCompatActivity() {
 
         tasks_list = ArrayList()
 
-        tasks_list.add("prueba")
-        tasks_list.add("prueba")
-        tasks_list.add("prueba")
+
+        db = Room.databaseBuilder(
+            applicationContext,
+            AppDatabase::class.java, "task-db"
+        ).allowMainThreadQueries().build()
+
+        cargar_tareas()
 
 
         adaptor = ArrayAdapter(this, android.R.layout.simple_list_item_1, tasks_list)
@@ -39,10 +45,13 @@ class MainActivity : AppCompatActivity() {
 
 
         btn_add.setOnClickListener {
-            var task = et_task.text.toString()
+            var task_str = et_task.text.toString()
 
-            if(!task.isNullOrEmpty()) {
-                tasks_list.add(task)
+            if(!task_str.isNullOrEmpty()) {
+                var task = Task(desc = task_str)
+                db.taskDao().addTask(task)
+
+                tasks_list.add(task_str)
                 adaptor.notifyDataSetChanged()
                 et_task.setText("")
             }else{
@@ -51,8 +60,21 @@ class MainActivity : AppCompatActivity() {
         }
 
         listView_task.onItemClickListener = AdapterView.OnItemClickListener{parent, view, position, id ->
+            var task_desc = tasks_list[position]
+
+            var task = db.taskDao().getTask(task_desc)
+
+            db.taskDao().delete(task)
+
             tasks_list.removeAt(position)
             adaptor.notifyDataSetChanged()
+        }
+    }
+
+    private fun cargar_tareas() {
+        var db_list = db.taskDao().getTasks()
+        for(task in db_list) {
+            tasks_list.add(task.desc)
         }
     }
 }
